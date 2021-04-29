@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collections;
 
 /***
  * Класс, являющийся представлением узла дерева 2-3-4
@@ -8,9 +9,7 @@ class Node<E extends Comparable<E>> {
     private int numItems;
     private Node<E> parent;
     private final ArrayList<Node<E>> childArray = new ArrayList<>(ORDER);
-    private final ArrayList<E> itemArray = new ArrayList<>(ORDER-1);
-//    private final Node[] childArray = new Node[ORDER];
-//    private final String[] itemArray = new String[ORDER-1];
+    private ArrayList<E> itemArray = new ArrayList<>(ORDER-1);
 
     public Node() {
         // Заполняем ArrayList нуллами, чтобы тот не выбрасывал исключения
@@ -19,6 +18,43 @@ class Node<E extends Comparable<E>> {
             itemArray.add(null);
         }
         childArray.add(null);
+    }
+
+    /***
+     * Метод для получения левого брата узла
+     * @return левого брат узла
+     */
+    public Node<E> getLeftBrother() {
+        Node<E> parent = this.getParent();
+        int i = 0;
+        for (i = 0; i < parent.getNumItems() + 1; i++) {
+            if (parent.getChild(i) == this) {
+                break;
+            }
+        }
+        // Мы самые левые, у нас нет левого брата
+        if (i == 0) {
+            return null;
+        }
+        return parent.getChild(i-1);
+    }
+    /***
+     * Метод для получения правого брата узла
+     * @return правый брат узла
+     */
+    public Node<E> getRightBrother() {
+        Node<E> parent = this.getParent();
+        int i = 0;
+        for (i = 0; i < parent.getNumItems() + 1; i++) {
+            if (parent.getChild(i) == this) {
+                break;
+            }
+        }
+        // Мы самые правые, нет у нас правого брата
+        if (i == parent.getNumItems()) {
+            return null;
+        }
+        return parent.getChild(i+1);
     }
 
     /***
@@ -116,7 +152,6 @@ class Node<E extends Comparable<E>> {
                 E itsKey = itemArray.get(j);
                 // Если новый элемент больше, сдвигаем его вправо
                 if (newItem.compareTo(itsKey) < 0) {
-//                if (newKey < itsKey) {
                     itemArray.set(j+1, itemArray.get(j));
                 } else {
                     // Вставляем новый элемент
@@ -141,6 +176,52 @@ class Node<E extends Comparable<E>> {
         numItems--;
         return temp;
     }
+    /***
+     * Удаление элемента в узле и сортировка
+     * @param id Порядковый номер элемента для удаления
+     * @return Удаленный элемент
+     */
+    public E removeItemAndSort(int id) {
+        // Предполагается, узел не пуст
+        E temp = itemArray.get(id);
+        itemArray.set(id, null);
+        numItems--;
+        ArrayList<E> list = new ArrayList<>();
+        for (int i = 0; i < numItems; i++) {
+            list.add(itemArray.get(i));
+        }
+        Collections.sort(list);
+        while (list.size() != 3) {
+            list.add(null);
+        }
+        itemArray = list;
+        return temp;
+    }
+    /***
+     * Удаление элемента в узле
+     * @param id Порядковый номер элемента для удаления
+     * @return Удаленный элемент
+     */
+    public E removeItem(int id) {
+        // Предполагается, узел не пуст
+        E temp = itemArray.get(id);
+        itemArray.set(id, null);
+        numItems--;
+        return temp;
+    }
+
+    public ArrayList<E> getItemArray() {
+        return itemArray;
+    }
+
+    public ArrayList<E> getItemArrayWithoutNull() {
+        ArrayList<E> list = new ArrayList<>();
+        for(int j = 0; j < numItems; j++) {
+            list.add(itemArray.get(j));
+        }
+        return list;
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();

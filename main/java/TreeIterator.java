@@ -1,38 +1,35 @@
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 
-public class TreeIterator implements Iterable<String> {
-    private final Tree234 tree;
+/***
+ * Итератор по обходу дерева 2-3-4
+ * @param <E> Тип дерева
+ */
+public class TreeIterator<E extends Comparable<E>> implements Iterable<E> {
+    private final Tree234<E> tree;
+    private final ArrayList<E> list;
+    private int passed = 0;
 
-    TreeIterator(Tree234 tree) {
+    TreeIterator(Tree234<E> tree) {
         this.tree = tree;
-    }
-
-    private Node getLeftLeafNode() {
-        Node curNode = tree.getRoot();
-        while (true) {
-            if (curNode.isLeaf()) {
-                return curNode;
-            } else {
-                curNode = curNode.getChild(0);
-            }
-        }
+        this.list = tree.getAllElements();
+        Collections.sort(this.list);
     }
 
     @Override
-    public Iterator<String> iterator() {
-        return new Iterator<String>() {
-            private int lastElementId = 0;
-            private String currentElement;
-            private Node currentNode = getLeftLeafNode();
-
+    public Iterator<E> iterator() {
+        return new Iterator<E>() {
             @Override
             public boolean hasNext() {
-                return true;
+                return list.size() > passed;
             }
 
             @Override
-            public String next() {
-                return "";
+            public E next() {
+                E el = list.get(passed);
+                passed++;
+                return el;
             }
 
             @Override

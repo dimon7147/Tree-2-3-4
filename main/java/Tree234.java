@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 /***
  * Класс, являющийся представлением дерева 2-3-4
  */
@@ -17,6 +19,25 @@ class Tree234<E extends Comparable<E>> {
                 return childNumber; // Да, он находится в этом узле. Элемент найден.
             } else if (curNode.isLeaf()) { // Если данный узел - лист, значит искать дальше смысла нет.
                 return -1;
+            } else { // С помошью метода getNextChild определяем, куда дальше двигаться в поисках элемента.
+                curNode = getNextChild(curNode, value);
+            }
+        }
+    }
+    /***
+     * Метод для поиска узла, содержащего элемент
+     * @param value Элемент для поиска
+     * @return Узел, содержащий элемент
+     */
+    private Node<E> findNode(E value) {
+        Node<E> curNode = root;
+        int childNumber;
+        while (true) {
+            // Для каждого объекта узла вызывается findItem(), чтобы узнать, находится ли предмет в этом узле
+            if ((childNumber = curNode.findItem(value)) != -1) {
+                return curNode; // Да, он находится в этом узле. Элемент найден.
+            } else if (curNode.isLeaf()) { // Если данный узел - лист, значит искать дальше смысла нет.
+                return null;
             } else { // С помошью метода getNextChild определяем, куда дальше двигаться в поисках элемента.
                 curNode = getNextChild(curNode, value);
             }
@@ -116,6 +137,205 @@ class Tree234<E extends Comparable<E>> {
         // Возвращаем правого потомка
         return node.getChild(j);
     }
+    /***
+     * Метод для получения списка элементов, меньших element
+     * @param element Элемент, меньше которого нужно искать
+     * @return Список элементов, меньших element
+     */
+    public ArrayList<E> getListOfElementsSmallerThat(E element) {
+        return new ArrayList<>(recFindSmallerItems(root, element));
+    }
+
+    /***
+     * Рекурсивно обходит узлы в поисках элементов, меньших element
+     * @param node Узел, с которого следуюет начать поиск
+     * @param element Элемент, меньше которого нужно искать
+     * @return Список элементов, меньших element
+     */
+    private ArrayList<E> recFindSmallerItems(Node<E> node, E element) {
+        if (node == null) {
+            return new ArrayList<>();
+        }
+        ArrayList<E> list = new ArrayList<>();
+        ArrayList<Node<E>> nodes = new ArrayList<>();
+        int j = 0;
+        // Проверяем, есть ли в узле предметы, меньше element
+        for (E el : node.getItemArray()) {
+            if (el == null) {
+                continue;
+            }
+            if (el.compareTo(element) < 0) {
+                // Нашли такой элемент, добавляем его в список найденных
+                list.add(el);
+                // Добавляем узел-потомок, в котором будем продолжать поиск остальных, т.к element < A
+                nodes.add(node.getChild(j));
+                // Проверяем, пустой ли следующий элемент. Если да, то добавляем в поиск еще и следующего потомка
+                if (!node.isLeaf() && node.getItem(j+1) == null) {
+                    nodes.add(node.getChild(j+1));
+                }
+            }
+            j++;
+        }
+        if (node.isLeaf()) {
+            return list;
+        }
+        // В данном узле нет элементов, меньших element, поэтому он в 0 потомке
+        if (nodes.size() == 0) {
+            nodes.add(node.getChild(0));
+        }
+        for (Node<E> n : nodes) {
+            list.addAll(recFindSmallerItems(n, element));
+        }
+        return list;
+    }
+    /***
+     * Метод для получения списка элементов, больших element
+     * @param element Элемент, больше которого нужно искать
+     * @return Список элементов, больших element
+     */
+    public ArrayList<E> getListOfElementsBiggerThat(E element) {
+        return new ArrayList<>(recFindBiggerItems(root, element));
+    }
+    /***
+     * Рекурсивно обходит узлы в поисках элементов, больших element
+     * @param node Узел, с которого следуюет начать поиск
+     * @param element Элемент, больше которого нужно искать
+     * @return Список элементов, больших element
+     */
+    private ArrayList<E> recFindBiggerItems(Node<E> node, E element) {
+        if (node == null) {
+            return new ArrayList<>();
+        }
+        ArrayList<E> list = new ArrayList<>();
+        ArrayList<Node<E>> nodes = new ArrayList<>();
+        int j = 0;
+        // Проверяем, есть ли в узле предметы, больше element
+        for (E el : node.getItemArray()) {
+            if (el == null) {
+                continue;
+            }
+            if (el.compareTo(element) > 0) {
+                // Нашли такой элемент, добавляем его в список найденных
+                list.add(el);
+                // Добавляем узел-потомок, в котором будем продолжать поиск остальных, т.к element > A
+                nodes.add(node.getChild(j));
+                // Проверяем, пустой ли следующий элемент. Если да, то добавляем в поиск еще и следующего потомка
+                if (!node.isLeaf() && node.getItem(j+1) == null) {
+                    nodes.add(node.getChild(j+1));
+                }
+            }
+            j++;
+        }
+        if (node.isLeaf()) {
+            return list;
+        }
+        // В данном узле нет элементов, больших element, поэтому он в 1 потомке
+        if (nodes.size() == 0) {
+            nodes.add(node.getChild(1));
+        }
+        for (Node<E> n : nodes) {
+            list.addAll(recFindBiggerItems(n, element));
+        }
+        return list;
+    }
+    /***
+     * Рекурсивно обходит узлы в поисках элементов, находящихся в диапозоне от from до to (включительно)
+     * @param from Начиная с какого элемента нужно искать
+     * @param to Заканчивая каким элементом нужно искать
+     * @return Список элементов, находящихся в диапозоне от from до to (включительно)
+     */
+    public ArrayList<E> getListOfElementsInRange(E from, E to) {
+        return new ArrayList<>(recFindInRange(root, from, to));
+    }
+    /***
+     * Рекурсивно обходит узлы в поисках элементов, находящихся в диапозоне от from до to (включительно)
+     * @param node Узел, с которого следуюет начать поиск
+     * @param from Начиная с какого элемента нужно искать
+     * @param to Заканчивая каким элементом нужно искать
+     * @return Список элементов, находящихся в диапозоне от from до to (включительно)
+     */
+    private ArrayList<E> recFindInRange(Node<E> node, E from, E to) {
+        if (node == null) {
+            return new ArrayList<>();
+        }
+        ArrayList<E> list = new ArrayList<>();
+        ArrayList<Node<E>> nodes = new ArrayList<>();
+        int j = 0;
+        // Проверяем, есть ли в узле предметы, больше element
+        for (E el : node.getItemArray()) {
+            if (el == null) {
+                continue;
+            }
+            if (from.compareTo(el) <= 0 && to.compareTo(el) >= 0) {
+                // Нашли такой элемент, добавляем его в список найденных
+                list.add(el);
+                // Добавляем узел-потомок, в котором будем продолжать поиск остальных, т.к element > A
+                nodes.add(node.getChild(j));
+                // Проверяем, пустой ли следующий элемент. Если да, то добавляем в поиск еще и следующего потомка
+                if (!node.isLeaf() && node.getItem(j+1) == null) {
+                    nodes.add(node.getChild(j+1));
+                }
+            }
+            j++;
+        }
+        if (node.isLeaf()) {
+            return list;
+        }
+        // В данном узле нет нужных элементов, поэтому он в 1 потомке
+        if (nodes.size() == 0) {
+            nodes.add(node.getChild(1));
+        }
+        for (Node<E> n : nodes) {
+            list.addAll(recFindInRange(n, from, to));
+        }
+        return list;
+    }
+    /***
+     * Метод, возвращающий наименьший элемент в дереве
+     * @return Наименьший элемент в дереве
+     */
+    public E getSmallest() {
+        // Обходим дерево по левой ветке и возвращаем 0 элемент, по правилу построения 2-4 дерева, он будет наименьшим.
+        Node<E> node = root;
+        while (!node.isLeaf()) {
+            node = node.getChild(0);
+        }
+        return node.getItem(0);
+    }
+    /***
+     * Метод, возвращающий наибольший элемент в дереве
+     * @return Наибольший элемент в дереве
+     */
+    public E getLargest() {
+        // Обходим дерево по правой ветке и возвращаем последний элемент,
+        // по правилу построения 2-4 дерева, он будет наибольшим.
+        Node<E> node = root;
+        while (!node.isLeaf()) {
+            node = node.getChild(node.getNumItems());
+        }
+        return node.getItem(node.getNumItems() - 1);
+    }
+
+    public ArrayList<E> getAllElements() {
+        return getAllElementsRec(root, 0);
+    }
+
+    public ArrayList<E> getAllElementsRec(Node<E> node, int level) {
+        ArrayList<E> elements = new ArrayList<>(node.getItemArrayWithoutNull());
+        // Рекурсивный вызов для каждого потомка текущего узла
+        int numItems = node.getNumItems();
+        for(int j = 0; j < numItems + 1; j++) {
+            Node<E> nextNode = node.getChild(j);
+            if (nextNode != null) {
+                elements.addAll(getAllElementsRec(nextNode, level+1));
+            } else {
+                return elements;
+            }
+        }
+        return elements;
+    }
+
+
     @Override
     public String toString() {
         return recDisplayTree(root, 0, 0);
