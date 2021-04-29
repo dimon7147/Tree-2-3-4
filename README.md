@@ -1,0 +1,2 @@
+# Tree-2-3-4
+ A 2–3–4 tree (also called a 2–4 tree) is a self-balancing data structure that can be used to implement dictionaries. The numbers mean a tree where every node with children (internal node) has either two, three, or four child nodes:  a 2-node has one data element, and if internal has two child nodes; a 3-node has two data elements, and if internal has three child nodes; a 4-node has three data elements, and if internal has four child nodes;
